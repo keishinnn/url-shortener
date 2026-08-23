@@ -163,7 +163,7 @@ export default function App() {
               </div>
 
               <div className="group mt-5 flex justify-end px-5 py-5 no-underline">
-                <a className="flex items-center justify-center gap-4 rounded-4xl bg-white px-6 py-4 text-[#26312c] shadow-[0_4px_14px_rgba(24,36,31,0.06)] transition-[transform,background-color,box-shadow] duration-300 ease-out group-hover:-translate-y-1 group-hover:bg-white/80 group-hover:shadow-[0_10px_24px_rgba(24,36,31,0.12)] group-active:translate-y-0 group-active:scale-[0.98] group-focus-visible:outline-2 group-focus-visible:outline-offset-3 group-focus-visible:outline-[#e86239] motion-reduce:transform-none motion-reduce:transition-none">
+                <a href="/" className="flex items-center justify-center gap-4 rounded-4xl bg-white px-6 py-4 text-[#26312c] shadow-[0_4px_14px_rgba(24,36,31,0.06)] transition-[transform,background-color,box-shadow] duration-300 ease-out group-hover:-translate-y-1 group-hover:bg-white/80 group-hover:shadow-[0_10px_24px_rgba(24,36,31,0.12)] group-active:translate-y-0 group-active:scale-[0.98] group-focus-visible:outline-2 group-focus-visible:outline-offset-3 group-focus-visible:outline-[#e86239] motion-reduce:transform-none motion-reduce:transition-none cursor-pointer">
                   <p>Shorten another link</p>
                   <RotateCcw className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-rotate-180 motion-reduce:transform-none motion-reduce:transition-none" />
                 </a>
