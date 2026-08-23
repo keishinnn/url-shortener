@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
+import { env } from "./config/env.js";
 import { urlRoutes } from "./features/shorten-url/routes/url.routes.js";
 
 export function buildApp() {
@@ -8,7 +9,7 @@ export function buildApp() {
   });
 
   app.register(cors, {
-    origin: "http://localhost:5173",
+    origin: env.BASE_URL,
   });
 
   app.register(urlRoutes, {
