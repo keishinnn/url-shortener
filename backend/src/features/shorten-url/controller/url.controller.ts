@@ -4,12 +4,12 @@ import * as urlService from "../service/url.service.js";
 export async function getShortenUrl(
   request: FastifyRequest<{
     Params: {
-      id: string;
+      shortCode: string;
     };
   }>,
   reply: FastifyReply,
 ) {
-  const url = await urlService.getShortenUrl(request.params.id);
+  const url = await urlService.getShortenUrl(request.params.shortCode);
 
   return reply.send(url);
 }

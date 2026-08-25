@@ -9,8 +9,10 @@ export async function createShortenUrl(data: CreateShortenUrlInput) {
   return created;
 }
 
-export function findShortenUrlById(id: string) {
-  return prisma.url.findUnique({
-    where: { id },
+export async function findShortenUrlByShortCode(shortCode: string) {
+  const originalUrl = await prisma.url.findUnique({
+    where: { shortCode },
   });
+
+  return originalUrl;
 }
