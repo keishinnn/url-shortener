@@ -45,20 +45,21 @@ describe("url.service", () => {
     expect(statusCodeOf(error)).toBe(404);
   });
 
-  it("returns shortCode when creating", async () => {
+  it("returns trigger-generated shortCode when creating", async () => {
     vi.mocked(urlRepository.createShortenUrl).mockResolvedValue({
-      shortCode: "abc123",
+      shortCode: "a1b2c3d",
     } as never);
 
     const result = await createShortenUrl({
       originalUrl: "https://example.com/long",
     });
 
-    expect(result).toEqual({ shortenUrl: "abc123" });
+    expect(result).toEqual({ shortenUrl: "a1b2c3d" });
     expect(vi.mocked(urlRepository.createShortenUrl)).toHaveBeenCalledOnce();
-    const sent = vi.mocked(urlRepository.createShortenUrl).mock.calls[0]?.[0];
-    expect(sent?.originalUrl).toBe("https://example.com/long");
-    expect(sent?.shortCode).toMatch(/^[A-Za-z0-9]{7}$/);
+    // DB trigger fills short_code, so only originalUrl is sent
+    expect(vi.mocked(urlRepository.createShortenUrl)).toHaveBeenCalledWith({
+      originalUrl: "https://example.com/long",
+    });
   });
 
   it("trims the originalUrl before saving", async () => {
@@ -94,20 +95,18 @@ describe("url.service", () => {
     },
   );
 
-  it("retries with a fresh code on unique conflict", async () => {
-    vi.mocked(urlRepository.createShortenUrl)
-      .mockRejectedValueOnce(Object.assign(new Error("conflict"), { code: "P2002" }))
-      .mockResolvedValueOnce({ shortCode: "retry01" } as never);
+  it("throws 500 when trigger did not generate a code", async () => {
+    vi.mocked(urlRepository.createShortenUrl).mockResolvedValue({
+      shortCode: null,
+    } as never);
 
-    const result = await createShortenUrl({
+    const error = await createShortenUrl({
       originalUrl: "https://example.com/long",
-    });
-
-    expect(result).toEqual({ shortenUrl: "retry01" });
-    expect(vi.mocked(urlRepository.createShortenUrl)).toHaveBeenCalledTimes(2);
+    }).catch((err: unknown) => err);
+    expect(statusCodeOf(error)).toBe(500);
   });
 
-  it("rethrows non-conflict repository errors", async () => {
+  it("rethrows repository errors", async () => {
     vi.mocked(urlRepository.createShortenUrl).mockRejectedValue(
       new Error("db down"),
     );

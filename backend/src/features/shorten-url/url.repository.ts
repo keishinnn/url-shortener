@@ -1,7 +1,7 @@
-import type { CreateShortenUrlData } from "./url.types.js";
+import type { CreateShortenUrlInput } from "./url.types.js";
 import { prisma } from "../../lib/prisma.js";
 
-export async function createShortenUrl(data: CreateShortenUrlData) {
+export async function createShortenUrl(data: CreateShortenUrlInput) {
   const created = await prisma.url.create({
     data,
   });
