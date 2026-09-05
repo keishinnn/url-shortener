@@ -5,7 +5,12 @@ import cors from "@fastify/cors";
 import { env } from "./config/env.js";
 import { urlRoutes } from "./features/shorten-url/url.routes.js";
 
-export async function buildApp() {
+export type BuildAppOptions = {
+  redisClient?: Redis;
+  enableRateLimit?: boolean;
+}
+
+export async function buildApp(opts?: BuildAppOptions) {
   const app = Fastify({
     logger: true,
     trustProxy: true,
@@ -15,12 +20,22 @@ export async function buildApp() {
     origin: env.BASE_URL,
   });
 
-  const redis = new Redis(env.REDIS_URL, {
-    connectTimeout: 500,
-    maxRetriesPerRequest: 1,
-  });
+  if (opts?.enableRateLimit !== false) {
+    const redis =
+      opts?.redisClient ??
+      new Redis(env.REDIS_URL, {
+        connectTimeout: 500,
+        maxRetriesPerRequest: 1,
+      });
 
-  await app.register(rateLimit, { global: false, redis });
+    await app.register(rateLimit, { global: false, redis });
+
+    if (!opts?.redisClient) {
+      app.addHook("onClose", async () => {
+        redis.disconnect();
+      });
+    }
+  }
 
   app.register(urlRoutes, {
     prefix: "/api",
