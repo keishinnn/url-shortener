@@ -6,6 +6,6 @@ export type Url = {
   id: string;
   shortCode: string;
   originalUrl: string;
-  createdAt: Date;
+  createdAt: Date | null;
   expiresAt: Date | null;
 };

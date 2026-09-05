@@ -1,5 +1,5 @@
-import * as urlRepository from "../repository/url.repository.js";
-import type { CreateShortenUrlInput, Url } from "../url.types.js";
+import * as urlRepository from "./url.repository.js";
+import type { CreateShortenUrlInput, Url } from "./url.types.js";
 
 export async function getShortenUrl(shortCode: string) {
   if (!shortCode) {

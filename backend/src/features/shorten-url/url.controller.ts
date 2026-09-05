@@ -1,5 +1,5 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
-import * as urlService from "../service/url.service.js";
+import * as urlService from "./url.service.js";
 
 export async function getShortenUrl(
   request: FastifyRequest<{
