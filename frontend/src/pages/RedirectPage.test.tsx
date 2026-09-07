@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { FetchTimeoutError } from '../lib/fetchWithTimeout'
 import Home from './Home'
 import RedirectPage from './RedirectPage'
 
@@ -77,6 +78,23 @@ describe('RedirectPage', () => {
     )
 
     renderAt('/r/unknown1')
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: /shorten link/i }),
+      ).toBeInTheDocument()
+    })
+    expect(assignMock).not.toHaveBeenCalled()
+  })
+
+  it('navigates home when the lookup times out', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(new FetchTimeoutError(10_000)),
+    )
+    vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    renderAt('/r/a1b2c3d')
 
     await waitFor(() => {
       expect(

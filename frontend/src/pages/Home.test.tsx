@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { UserEvent } from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { FetchTimeoutError } from '../lib/fetchWithTimeout'
 import Home from './Home'
 
 const API_URL = 'http://test-api.local'
@@ -84,6 +85,25 @@ describe('Home', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Failed to shorten url.')).toBeInTheDocument()
+    })
+    expect(screen.queryByText(/your short link/i)).not.toBeInTheDocument()
+  })
+
+  it('shows a timeout message when the request times out', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(new FetchTimeoutError(10_000)),
+    )
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const user = userEvent.setup()
+    render(<Home />)
+    await submitUrl(user, 'https://example.com/very/long/url')
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('Request timed out. Please try again.'),
+      ).toBeInTheDocument()
     })
     expect(screen.queryByText(/your short link/i)).not.toBeInTheDocument()
   })

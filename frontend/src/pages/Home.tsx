@@ -1,6 +1,10 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { Copy, ArrowRight, Link, RotateCcw } from "lucide-react";
+import {
+  fetchWithTimeout,
+  FetchTimeoutError,
+} from "../lib/fetchWithTimeout";
 
 export default function Home() {
   const [originalUrl, setOriginalUrl] = useState("");
@@ -17,7 +21,7 @@ export default function Home() {
     setError(null);
 
     try {
-      const response = await fetch(`${API_URL}/api/shorten-url`, {
+      const response = await fetchWithTimeout(`${API_URL}/api/shorten-url`, {
         method: "POST",
 
         headers: {
@@ -42,7 +46,11 @@ export default function Home() {
       return;
     } catch (err) {
       console.error("Error submitting url: ", err);
-      setError("Failed to shorten url.");
+      setError(
+        err instanceof FetchTimeoutError
+          ? "Request timed out. Please try again."
+          : "Failed to shorten url.",
+      );
     } finally {
       setLoading(false);
     }
