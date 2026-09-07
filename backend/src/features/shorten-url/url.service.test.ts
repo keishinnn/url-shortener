@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Prisma } from "../../generated/prisma/client.js";
 import * as urlRepository from "./url.repository.js";
 import {
   createShortenUrl,
@@ -12,6 +13,13 @@ vi.mock("./url.repository.js", () => ({
 
 function statusCodeOf(error: unknown): number | undefined {
   return (error as { statusCode?: number })?.statusCode;
+}
+
+function collisionError() {
+  return new Prisma.PrismaClientKnownRequestError(
+    "Unique constraint failed on the fields: (`short_code`)",
+    { code: "P2002", clientVersion: "test" },
+  );
 }
 
 describe("url.service", () => {
@@ -106,7 +114,7 @@ describe("url.service", () => {
     expect(statusCodeOf(error)).toBe(500);
   });
 
-  it("rethrows repository errors", async () => {
+  it("rethrows repository errors without retrying", async () => {
     vi.mocked(urlRepository.createShortenUrl).mockRejectedValue(
       new Error("db down"),
     );
@@ -114,5 +122,55 @@ describe("url.service", () => {
     await expect(
       createShortenUrl({ originalUrl: "https://example.com/long" }),
     ).rejects.toThrow("db down");
+    expect(vi.mocked(urlRepository.createShortenUrl)).toHaveBeenCalledOnce();
+  });
+
+  it("retries a short-code collision and returns the fresh code", async () => {
+    vi.mocked(urlRepository.createShortenUrl)
+      .mockRejectedValueOnce(collisionError())
+      .mockResolvedValueOnce({ shortCode: "b2c3d4e" } as never);
+
+    const result = await createShortenUrl({
+      originalUrl: "https://example.com/long",
+    });
+
+    expect(result).toEqual({ shortenUrl: "b2c3d4e" });
+    expect(vi.mocked(urlRepository.createShortenUrl)).toHaveBeenCalledTimes(
+      2,
+    );
+  });
+
+  it("retries code-shaped errors without the Prisma class", async () => {
+    vi.mocked(urlRepository.createShortenUrl)
+      .mockRejectedValueOnce(
+        Object.assign(new Error("Unique constraint failed"), {
+          code: "P2002",
+        }),
+      )
+      .mockResolvedValueOnce({ shortCode: "c3d4e5f" } as never);
+
+    const result = await createShortenUrl({
+      originalUrl: "https://example.com/long",
+    });
+
+    expect(result).toEqual({ shortenUrl: "c3d4e5f" });
+  });
+
+  it("throws 500 after exhausting collision retries", async () => {
+    vi.mocked(urlRepository.createShortenUrl).mockRejectedValue(
+      collisionError(),
+    );
+
+    const error = await createShortenUrl({
+      originalUrl: "https://example.com/long",
+    }).catch((err: unknown) => err);
+
+    expect((error as Error).message).toBe(
+      "Could not generate a unique short code",
+    );
+    expect(statusCodeOf(error)).toBe(500);
+    expect(vi.mocked(urlRepository.createShortenUrl)).toHaveBeenCalledTimes(
+      5,
+    );
   });
 });

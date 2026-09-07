@@ -75,26 +75,6 @@ export default function Home() {
         >
           <span>URL Shortener</span>
         </a>
-        <div className="flex gap-10 max-[650px]:hidden">
-          <a
-            className="text-[13px] font-medium text-[#5f6863] no-underline transition-colors duration-200 hover:text-[#e86239]"
-            href="#home"
-          >
-            Home
-          </a>
-          <a
-            className="text-[13px] font-medium text-[#5f6863] no-underline transition-colors duration-200 hover:text-[#e86239]"
-            href="#about"
-          >
-            Why Snip?
-          </a>
-        </div>
-        <a
-          className="flex items-center gap-2.5 text-[13px] font-semibold text-[#18241f] no-underline max-[650px]:text-[0px]"
-          href="#shortener"
-        >
-          Get started <ArrowRight />
-        </a>
       </nav>
 
       <section
