@@ -9,5 +9,6 @@ export default defineConfig({
     globals: false,
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    exclude: ['**/node_modules/**', 'e2e/**', '**/playwright.config.ts'],
   },
 })
